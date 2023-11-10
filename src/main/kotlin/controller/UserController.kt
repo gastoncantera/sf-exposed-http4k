@@ -1,8 +1,7 @@
 package controller
 
 import domain.User
-import domain.UserId
-import service.UserCreateRequest
+import service.UserRequest
 import service.UserService
 import org.http4k.core.*
 import org.http4k.routing.bind
@@ -13,35 +12,29 @@ import org.http4k.format.Jackson.auto
 object UserController {
 
     private val userService = UserService()
-    private val userLens = Body.auto<User>().toLens()
 
     val app: HttpHandler = routes(
 
+        "/api/v1/users" bind Method.GET to {
+            val users = userService.findUsers()
+            Response(Status.OK).with(Body.auto<List<User>>().toLens() of users)
+        },
+
         "/api/v1/users/{userId}" bind Method.GET to { request ->
             val userId = request.path("userId")?.toLong() ?: 0
-            val user = userService.findUserById(UserId(userId))
+            val user = userService.findUserById(userId)
             if (user != null) {
-                Response(Status.OK).with(userLens of user)
+                Response(Status.OK).with(Body.auto<User>().toLens() of user)
             } else {
                 Response(Status.NOT_FOUND)
             }
         },
 
         "/api/v1/users" bind Method.POST to { request ->
-            val userRequest = Body.auto<UserCreateRequestForm>().toLens()(request)
-            val userId = userService.create(
-                UserCreateRequest(
-                    name = userRequest.name,
-                    age = userRequest.age,
-                )
-            )
-            Response(Status.OK).with(userLens of User(userId, userRequest.name, userRequest.age))
+            val userRequest = Body.auto<UserRequest>().toLens()(request)
+            val userId = userService.create(userRequest)
+            Response(Status.OK).with(Body.auto<Long>().toLens() of userId)
         }
 
-    )
-
-    data class UserCreateRequestForm(
-        val name: String,
-        val age: Int,
     )
 }

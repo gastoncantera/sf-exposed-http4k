@@ -4,22 +4,19 @@ package service
 
 import domain.User
 import domain.UserEntity
-import domain.UserId
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import modules.DatabaseProvider
 
 class UserService {
 
-    fun findUserById(id: UserId): User? {
+    fun findUsers(): List<User> {
         return transaction(db = DatabaseProvider.readOnlyDb) {
-            UserEntity.select { UserEntity.id eq id.value }.firstOrNull()?.let {
+            UserEntity.selectAll().map {
                 User(
-                    id = UserId(it[UserEntity.id].value),
+                    id = it[UserEntity.id].value,
                     name = it[UserEntity.name],
                     age = it[UserEntity.age],
                 )
@@ -27,7 +24,19 @@ class UserService {
         }
     }
 
-    fun create(request: UserCreateRequest): UserId {
+    fun findUserById(id: Long): User? {
+        return transaction(db = DatabaseProvider.readOnlyDb) {
+            UserEntity.select { UserEntity.id eq id }.firstOrNull()?.let {
+                User(
+                    id = it[UserEntity.id].value,
+                    name = it[UserEntity.name],
+                    age = it[UserEntity.age],
+                )
+            }
+        }
+    }
+
+    fun create(request: UserRequest): Long {
         val id = transaction {
             UserEntity.insertAndGetId {
                 it[name] = request.name
@@ -35,27 +44,11 @@ class UserService {
             }
         }
 
-        return UserId(id.value)
-    }
-
-    fun update(id: Long, request: UserUpdateRequest) {
-        UserEntity.update({ UserEntity.id eq id }) {
-            request.name?.let { name -> it[UserEntity.name] = name }
-            request.age?.let { age -> it[UserEntity.age] = age }
-        }
-    }
-
-    fun delete(id: UserId) {
-        UserEntity.deleteWhere { UserEntity.id eq id.value }
+        return id.value
     }
 }
 
-data class UserCreateRequest(
+data class UserRequest(
     val name: String,
     val age: Int,
-)
-
-data class UserUpdateRequest(
-    val name: String? = null,
-    val age: Int? = null,
 )
