@@ -4,11 +4,14 @@ import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
+import support.SchemaInitialize
 
 fun main() {
+    SchemaInitialize.run()
+
     val printingApp: HttpHandler = PrintRequest().then(UserController.app)
 
-    val server = printingApp.asServer(SunHttp(9000)).start()
+    val server = printingApp.asServer(SunHttp(8080)).start()
 
     println("Server started on " + server.port())
 }

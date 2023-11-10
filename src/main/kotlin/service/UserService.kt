@@ -10,26 +10,31 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.transactions.transaction
 
 class UserService {
 
     // read user by user primary key
     fun findUserById(id: UserId): User? {
         // Use Exposed dsl without `transaction { }`
-        return UserEntity.select { UserEntity.id eq id.value }.firstOrNull()?.let {
-            User(
-                id = UserId(it[UserEntity.id].value),
-                name = it[UserEntity.name],
-                age = it[UserEntity.age],
-            )
+        return transaction {
+            UserEntity.select { UserEntity.id eq id.value }.firstOrNull()?.let {
+                User(
+                    id = UserId(it[UserEntity.id].value),
+                    name = it[UserEntity.name],
+                    age = it[UserEntity.age],
+                )
+            }
         }
     }
 
     // create user
     fun create(request: UserCreateRequest): UserId {
-        val id = UserEntity.insertAndGetId {
-            it[name] = request.name
-            it[age] = request.age
+        val id = transaction {
+            UserEntity.insertAndGetId {
+                it[name] = request.name
+                it[age] = request.age
+            }
         }
 
         return UserId(id.value)
