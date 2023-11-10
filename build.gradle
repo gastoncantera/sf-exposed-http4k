@@ -34,8 +34,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
 
 
-    implementation 'org.jetbrains.exposed:exposed-core:0.44.1'
-    implementation 'org.jetbrains.exposed:exposed-jdbc:0.44.1'
+//    implementation 'org.jetbrains.exposed:exposed-core:0.44.1'
+//    implementation 'org.jetbrains.exposed:exposed-jdbc:0.44.1'
+    implementation "org.jetbrains.exposed:exposed:0.17.14"
     implementation ("org.postgresql:postgresql:42.6.0")
 
     testImplementation("org.http4k:http4k-testing-approval:${http4kVersion}")
