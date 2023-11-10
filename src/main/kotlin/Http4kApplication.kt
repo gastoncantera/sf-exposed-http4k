@@ -4,10 +4,10 @@ import org.http4k.core.then
 import org.http4k.filter.DebuggingFilters.PrintRequest
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
-import support.SchemaInitialize
+import modules.DatabaseProvider
 
 fun main() {
-    SchemaInitialize.run()
+    DatabaseProvider.initialize()
 
     val printingApp: HttpHandler = PrintRequest().then(UserController.app)
 

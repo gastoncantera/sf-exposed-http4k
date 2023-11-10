@@ -16,9 +16,6 @@ object UserController {
     private val userLens = Body.auto<User>().toLens()
 
     val app: HttpHandler = routes(
-        "/ping" bind Method.GET to {
-            Response(Status.OK).body("pong")
-        },
 
         "/api/v1/users/{userId}" bind Method.GET to { request ->
             val userId = request.path("userId")?.toLong() ?: 0
@@ -40,6 +37,7 @@ object UserController {
             )
             Response(Status.OK).with(userLens of User(userId, userRequest.name, userRequest.age))
         }
+
     )
 
     data class UserCreateRequestForm(

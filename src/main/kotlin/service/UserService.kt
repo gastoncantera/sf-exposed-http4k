@@ -11,13 +11,12 @@ import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.transactions.transaction
+import modules.DatabaseProvider
 
 class UserService {
 
-    // read user by user primary key
     fun findUserById(id: UserId): User? {
-        // Use Exposed dsl without `transaction { }`
-        return transaction {
+        return transaction(db = DatabaseProvider.readOnlyDb) {
             UserEntity.select { UserEntity.id eq id.value }.firstOrNull()?.let {
                 User(
                     id = UserId(it[UserEntity.id].value),
@@ -28,7 +27,6 @@ class UserService {
         }
     }
 
-    // create user
     fun create(request: UserCreateRequest): UserId {
         val id = transaction {
             UserEntity.insertAndGetId {
@@ -40,7 +38,6 @@ class UserService {
         return UserId(id.value)
     }
 
-    // update user
     fun update(id: Long, request: UserUpdateRequest) {
         UserEntity.update({ UserEntity.id eq id }) {
             request.name?.let { name -> it[UserEntity.name] = name }
@@ -48,7 +45,6 @@ class UserService {
         }
     }
 
-    // delete user
     fun delete(id: UserId) {
         UserEntity.deleteWhere { UserEntity.id eq id.value }
     }
