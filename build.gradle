@@ -38,6 +38,8 @@ dependencies {
 //    implementation 'org.jetbrains.exposed:exposed-jdbc:0.44.1'
     implementation "org.jetbrains.exposed:exposed:0.17.14"
     implementation ("org.postgresql:postgresql:42.6.0")
+//    implementation ("com.zaxxer:HikariCP:5.1.0")
+    implementation ("com.zaxxer:HikariCP:2.7.6")
 
     testImplementation("org.http4k:http4k-testing-approval:${http4kVersion}")
     testImplementation("org.http4k:http4k-testing-hamkrest:${http4kVersion}")
