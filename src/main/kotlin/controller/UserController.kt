@@ -1,40 +1,38 @@
 package controller
 
 import domain.User
+import modules.ServiceProvider
 import service.UserRequest
-import service.UserService
 import org.http4k.core.*
-import org.http4k.routing.bind
-import org.http4k.routing.path
-import org.http4k.routing.routes
 import org.http4k.format.Jackson.auto
+import org.http4k.lens.Path
+import org.http4k.lens.long
 
 object UserController {
 
-    private val userService = UserService()
+    private val userService = ServiceProvider.userService
 
-    val app: HttpHandler = routes(
+    private val userIdLens = Path.long().of("userId")
+    private val userRequestLens = Body.auto<UserRequest>().toLens()
 
-        "/api/v1/users" bind Method.GET to {
-            val users = userService.findUsers()
-            Response(Status.OK).with(Body.auto<List<User>>().toLens() of users)
-        },
+    val getUserHandler: HttpHandler = { _ ->
+        val users = userService.findUsers()
+        Response(Status.OK).with(Body.auto<List<User>>().toLens() of users)
+    }
 
-        "/api/v1/users/{userId}" bind Method.GET to { request ->
-            val userId = request.path("userId")?.toLong() ?: 0
-            val user = userService.findUserById(userId)
-            if (user != null) {
-                Response(Status.OK).with(Body.auto<User>().toLens() of user)
-            } else {
-                Response(Status.NOT_FOUND)
-            }
-        },
-
-        "/api/v1/users" bind Method.POST to { request ->
-            val userRequest = Body.auto<UserRequest>().toLens()(request)
-            val userId = userService.create(userRequest)
-            Response(Status.OK).with(Body.auto<Long>().toLens() of userId)
+    val getUsersHandler: HttpHandler = { request: Request ->
+        val userId = userIdLens(request)
+        val user = userService.findUserById(userId)
+        if (user != null) {
+            Response(Status.OK).with(Body.auto<User>().toLens() of user)
+        } else {
+            Response(Status.NOT_FOUND)
         }
+    }
 
-    )
+    val createUserHandler: HttpHandler = { request: Request ->
+        val userRequest = userRequestLens(request)
+        val userId = userService.create(userRequest)
+        Response(Status.OK).with(Body.auto<Long>().toLens() of userId)
+    }
 }
