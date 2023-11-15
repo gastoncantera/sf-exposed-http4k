@@ -1,8 +1,7 @@
 version: "3"
 services:
   postgresql-master:
-    image: bitnami/postgresql
-    restart: always
+    image: bitnami/postgresql:11.2.0
     ports:
       - '5432:5432'
     volumes:
@@ -10,14 +9,11 @@ services:
     environment:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_LOG_HOSTNAME=true
       - POSTGRESQL_REPLICATION_MODE=master
       - POSTGRESQL_REPLICATION_USER=repl_user
       - POSTGRESQL_REPLICATION_PASSWORD=repl_user
-      - POSTGRESQL_PGAUDIT_LOG=READ,WRITE
   postgresql-slave:
-    image: bitnami/postgresql
-    restart: always
+    image: bitnami/postgresql:11.2.0
     ports:
       - '5433:5432'
     depends_on:
@@ -25,10 +21,8 @@ services:
     environment:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_LOG_HOSTNAME=true
       - POSTGRESQL_MASTER_HOST=postgresql-master
       - POSTGRESQL_MASTER_PORT_NUMBER=5432
       - POSTGRESQL_REPLICATION_MODE=slave
       - POSTGRESQL_REPLICATION_USER=repl_user
       - POSTGRESQL_REPLICATION_PASSWORD=repl_user
-      - POSTGRESQL_PGAUDIT_LOG=READ
